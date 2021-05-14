@@ -15,7 +15,7 @@ end state_machine;
 
 architecture state_machine_arc of state_machine is
 
-type state_type is (IF_state,ID,Execute0,Execute1,Check_flag,IncPC);
+type state_type is (reset_state,IF_state,ID,Execute0,Execute1,Check_flag,IncPC);
 signal Next_state,State : state_type;
 
 signal counter : std_logic_vector(7 downto 0) := "00000000";
@@ -26,7 +26,8 @@ constant ROMSA : memory := (
 constant ROMFA : memory := (
 	others => "00000000");
 
-signal opcode : std_logic_vector(3 downto 0); 
+signal opcode : std_logic_vector(3 downto 0);
+
 signal Start_Address : std_logic_vector(7 downto 0); 
 signal Finish_Address : std_logic_vector(7 downto 0);
 signal cur_address : std_logic_vector(7 downto 0);
@@ -42,16 +43,18 @@ begin
 	sync_proc: process(clk,Next_state,Reset)
 	begin
 		if (Reset = '1') then
-			State <= IF_state;
-			counter <= "00000000";
+			State <= reset_state;
 		elsif (rising_edge(clk)) then
 			State <= Next_state;
 		end if;	
 	end process sync_proc;
 	
-	comb_proc: process(State,Group_Com,Zero_flag,OpCode_COM)
+	comb_proc: process(State)
 	begin
 		case State is
+			when reset_state =>
+				counter <= "00000000";
+				Next_state <= IF_state;
 			when IF_state =>
 				if (counter = "00000011") then -- IR = MEM[PC]
 					Next_state <= ID;
@@ -108,7 +111,7 @@ begin
 					cur_address <= std_logic_vector(to_unsigned(254, 8));
 					counter <= std_logic_vector(to_unsigned(254, 8));
 				end if;
-			end case;
-		Address <= cur_address; -- I don't know if this is correct	
+			end case;	
 	end process comb_proc;
+	Address <= cur_address;
 end state_machine_arc;
