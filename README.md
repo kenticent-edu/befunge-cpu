@@ -23,7 +23,8 @@ original article).
 We expanded this simplified block diagram (see docs/CPU_block diagram.vsdx) and extended its functionality to the ability to 
 communicate with the outside world via UART. Although some of the functionality was truncated due to the time limit (the ALU operations, for example).
 
-[First Presentation](https://docs.google.com/presentation/d/1fmOQRMMFil1ZESH2bRg40HTYU4H_mSZeBrUqtN1Gc4g/edit?usp=sharing).
+[First presentation](https://docs.google.com/presentation/d/1fmOQRMMFil1ZESH2bRg40HTYU4H_mSZeBrUqtN1Gc4g/edit?usp=sharing).</br>
+[Second presentation](https://docs.google.com/presentation/d/1R9Buv4Q3Q-ZlOxjiZWOMXdIvSsdLvyr26jjSyt-mfJI/edit?usp=sharing).
 
 ## Roadmap
 
