@@ -15,7 +15,7 @@ end state_machine;
 
 architecture state_machine_arc of state_machine is
 
-type state_type is (reset_state,IF_state,ID,Execute0,Execute1,Check_flag,IncPC);
+type state_type is (IF_state,ID,Execute0,Execute1,Check_flag,IncPC);
 signal Next_state,State : state_type;
 
 signal counter : std_logic_vector(7 downto 0) := "00000000";
@@ -40,78 +40,71 @@ constant DNZ : std_logic_vector(3 downto 0) := "0000";
 begin
 	opcode <= Group_Com & OpCode_Com;
 	
-	sync_proc: process(clk,Next_state,Reset)
+	super_proc: process(clk,Reset)
 	begin
 		if (Reset = '1') then
-			State <= reset_state;
+			counter <= "00000000";
+			State <= IF_state;
 		elsif (rising_edge(clk)) then
-			State <= Next_state;
-		end if;	
-	end process sync_proc;
-	
-	comb_proc: process(State)
-	begin
-		case State is
-			when reset_state =>
-				counter <= "00000000";
-				Next_state <= IF_state;
-			when IF_state =>
-				if (counter = "00000011") then -- IR = MEM[PC]
-					Next_state <= ID;
-				else
-					counter <= std_logic_vector(unsigned(counter) + 1);
-				end if;
-				cur_address <= counter;
-			when ID =>
-				Start_Address <= std_logic_vector(unsigned( ROMSA(to_integer(unsigned(opcode))) ) + 1);
-				Finish_Address <= ROMFA(to_integer(unsigned(opcode)));
-				cur_address <= ROMSA(to_integer(unsigned(opcode)));
-				if (opcode=SZ or opcode=SNZ or opcode=DZ or opcode=DNZ) then
-					Next_state <= Execute1;
-				else
-					Next_state <= Execute0;
-				end if;
-			when Execute1 =>
-				cur_address <= Start_Address;
-				if (cur_address = Finish_Address) then
-					Next_state <= Check_flag;
-				else
-					Start_Address <= std_logic_vector(unsigned(Start_Address) + 1);
-				end if;	
-			when Check_flag =>
-				case opcode is
-					when SZ =>
-						if (Zero_flag = '0') then
-							cur_address <= std_logic_vector(unsigned(Start_Address) + 1);
-							Start_Address <= std_logic_vector(unsigned(Start_Address) + 2);
-							Finish_Address <= std_logic_vector(unsigned(Start_Address) + 2);
-							Next_state <= Execute0;
-						else
-							Next_state <= IncPC;
-						end if;	    
-					-- when SNZ =>
-					-- when DZ =>
-					-- when DNZ =>
-					when others =>
-						null;
-				end case;	
-			when Execute0 =>
-				cur_address <= Start_Address;
-				if (cur_address = Finish_Address) then
-					Next_state <= IncPC;
-				else
-					Start_Address <= std_logic_vector(unsigned(Start_Address) + 1);
-				end if;	
-			when IncPC =>
-				if (counter = std_logic_vector(to_unsigned(254, 8))) then -- PC	= PC + deltaPC
-					cur_address <= std_logic_vector(to_unsigned(255, 8));	
-					Next_state <= IF_state;
-					counter <= std_logic_vector(to_unsigned(0, 8));
-				else
-					cur_address <= std_logic_vector(to_unsigned(254, 8));
-					counter <= std_logic_vector(to_unsigned(254, 8));
-				end if;
-			end case;	
-	end process comb_proc;
+			case State is
+				when IF_state =>
+					if (counter = "00000011") then -- IR = MEM[PC]
+						State <= ID;
+					else
+						counter <= std_logic_vector(unsigned(counter) + 1);
+					end if;
+					cur_address <= counter;
+				when ID =>
+					Start_Address <= std_logic_vector(unsigned( ROMSA(to_integer(unsigned(opcode))) ) + 1);
+					Finish_Address <= ROMFA(to_integer(unsigned(opcode)));
+					cur_address <= ROMSA(to_integer(unsigned(opcode)));
+					if (opcode=SZ or opcode=SNZ or opcode=DZ or opcode=DNZ) then
+						State <= Execute1;
+					else
+						State <= Execute0;
+					end if;
+				when Execute1 =>
+					cur_address <= Start_Address;
+					if (cur_address = Finish_Address) then
+						State <= Check_flag;
+					else
+						Start_Address <= std_logic_vector(unsigned(Start_Address) + 1);
+					end if;	
+				when Check_flag =>
+					case opcode is
+						when SZ =>
+							if (Zero_flag = '0') then
+								cur_address <= std_logic_vector(unsigned(Start_Address) + 1);
+								Start_Address <= std_logic_vector(unsigned(Start_Address) + 2);
+								Finish_Address <= std_logic_vector(unsigned(Start_Address) + 2);
+								State <= Execute0;
+							else
+								State <= IncPC;
+							end if;	    
+						-- when SNZ =>
+						-- when DZ =>
+						-- when DNZ =>
+						when others =>
+							null;
+					end case;	
+				when Execute0 =>
+					cur_address <= Start_Address;
+					if (cur_address = Finish_Address) then
+						State <= IncPC;
+					else
+						Start_Address <= std_logic_vector(unsigned(Start_Address) + 1);
+					end if;	
+				when IncPC =>
+					if (counter = std_logic_vector(to_unsigned(254, 8))) then -- PC	= PC + deltaPC
+						cur_address <= std_logic_vector(to_unsigned(255, 8));	
+						State <= IF_state;
+						counter <= std_logic_vector(to_unsigned(0, 8)); -- possible bug
+					else
+						cur_address <= std_logic_vector(to_unsigned(254, 8));
+						counter <= std_logic_vector(to_unsigned(254, 8));
+					end if;
+				end case;
+			end if;
+	end process super_proc;
 	Address <= cur_address;
 end state_machine_arc;

@@ -91,9 +91,8 @@ architecture control_unit_arc of control_unit is
 	-- intermediate	signal declaration
 	signal p1_out : std_logic_vector(7 downto 0);
 	signal p2_out,p4_out,p6_out,p8_out : std_logic_vector(2 downto 0);
-	signal p3_out,p5_out,p9_out,p10_out,p11_out,p12_out,p13_out,p14_out,
-		p15_out,p16_out,p17_out,p18_out,p19_out,p21_out : std_logic;
-	signal p7_out,p20_out : std_logic_vector(1 downto 0);
+	signal p3_out,p5_out,p9_out : std_logic;
+	signal p7_out : std_logic_vector(1 downto 0);
 	
 begin
 	sm1: state_machine port map (Group_Com => Instruction(17),
@@ -111,18 +110,18 @@ begin
 					    AddrA_source => p7_out,
 					    AddrB_CU => p8_out,
 					    AddrB_source =>	p9_out,
-					    MAR_OE => p10_out,
-					    MARWrite => p11_out,
-					    MR_OE_InOut => p12_out,
-					    MRWrite_fromMem => p13_out,
-					    MRWrite_fromALU => p14_out,
-					    MemRead => p15_out,
-					    MemWrite =>	p16_out,
-					    IRWrite => p17_out,
-					    RgFileRW =>	p18_out,
-					    Control_VC => p19_out,
-					    Select_MUXB => p20_out,
-					    Select_MUXA => p21_out);
+					    MAR_OE => MAR_OE,
+					    MARWrite => MARWrite,
+					    MR_OE_InOut => MR_OE_InOut,
+					    MRWrite_fromMem => MRWrite_fromMem,
+					    MRWrite_fromALU => MRWrite_fromALU,
+					    MemRead => MemRead,
+					    MemWrite =>	MemWrite,
+					    IRWrite => IRWrite,
+					    RgFileRW =>	RgFileRW,
+					    Control_VC => Control_VC,
+					    Select_MUXB => Select_MUXB,
+					    Select_MUXA => Select_MUXA);
 	m1: MUX_2_1 port map (A => p2_out,
 						  B => Instruction(8 downto 6),
 						  SEL => p3_out,
